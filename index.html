@@ -17,6 +17,17 @@
     <title>Supermarket Items</title>
   </head>
   <body>
+    <!-- Category Buttons -->
+    <div class="container my-3">
+      <button class="btn btn-primary filter-btn" data-category="All">All</button>
+      <button class="btn btn-secondary filter-btn" data-category="Fruits">Fruits</button>
+      <button class="btn btn-secondary filter-btn" data-category="Vegetables">Vegetables</button>
+      <button class="btn btn-secondary filter-btn" data-category="Meat">Meat</button>
+      <button class="btn btn-secondary filter-btn" data-category="Dairy">Dairy</button>
+      <button class="btn btn-secondary filter-btn" data-category="Bakery">Bakery</button>
+    </div>
+
+    <!-- Items Container -->
     <div class="container">
       <div class="row" id="cardContainer">
         <!-- Cards will be injected here -->
@@ -30,6 +41,10 @@
         <!-- Cart items will be listed here -->
       </ul>
       <p>Total: $<span id="cartTotal">0.00</span></p>
+      <p>Items in Cart: <span id="cartItemsNumber">0</span></p>
+      <p>Average Price: $<span id="averagePrice">0.00</span></p>
+      <p>Minimum Price: $<span id="minimumPrice">0.00</span></p>
+      <p>Maximum Price: $<span id="maximumPrice">0.00</span></p>
     </div>
 
     <script>
@@ -60,31 +75,54 @@
       // Initialize cart items array
       const cartItems = [];
 
-      // Initialize cards in a grid layout - Bootstrap
+      // DOM Elements
       const container = document.getElementById('cardContainer');
       const cartItemsContainer = document.getElementById('cartItems');
       const cartTotal = document.getElementById('cartTotal');
+      const cartItemsNumber = document.getElementById('cartItemsNumber');
+      const averagePrice = document.getElementById('averagePrice');
+      const minimumPrice = document.getElementById('minimumPrice');
+      const maximumPrice = document.getElementById('maximumPrice');
 
-      // Render cards dynamically
-      container.innerHTML = items.map(item => `
-        <div class="col-md-4 mb-4">
-          <div class="card" data-name="${item.name}" data-price="${item.price}">
-            <div class="card-body">
-              <h5 class="card-title">${item.name}</h5>
-              <p class="card-text">Category: ${item.category}</p>
-              <p class="card-text">Price: $${item.price.toFixed(2)}</p>
+      // Function to render items based on selected category
+      function renderItems(filteredItems) {
+        container.innerHTML = filteredItems.map(item => `
+          <div class="col-md-4 mb-4">
+            <div class="card" data-name="${item.name}" data-price="${item.price}">
+              <div class="card-body">
+                <h5 class="card-title">${item.name}</h5>
+                <p class="card-text">Category: ${item.category}</p>
+                <p class="card-text">Price: $${item.price.toFixed(2)}</p>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
 
-      // Add event listeners to each card after they are rendered
-      document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', function() {
-          const itemName = this.getAttribute('data-name');
-          const itemPrice = parseFloat(this.getAttribute('data-price'));
+        // Add event listeners to each card
+        document.querySelectorAll('.card').forEach(card => {
+          card.addEventListener('click', function() {
+            const itemName = this.getAttribute('data-name');
+            const itemPrice = parseFloat(this.getAttribute('data-price'));
 
-          addToCart(itemName, itemPrice);
+            addToCart(itemName, itemPrice);
+          });
+        });
+      }
+
+      // Initial render of all items
+      renderItems(items);
+
+      // Event listeners for filter buttons
+      document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const category = this.getAttribute('data-category');
+
+          if (category === "All") {
+            renderItems(items);
+          } else {
+            const filteredItems = items.filter(item => item.category === category);
+            renderItems(filteredItems);
+          }
         });
       });
 
@@ -102,6 +140,10 @@
 
         const total = cartItems.reduce((sum, item) => sum + item.price, 0);
         cartTotal.innerText = total.toFixed(2);
+        cartItemsNumber.innerText = cartItems.length;
+        averagePrice.innerText = (total / cartItems.length).toFixed(2);
+        minimumPrice.innerText = Math.min(...cartItems.map(item => item.price)).toFixed(2);
+        maximumPrice.innerText = Math.max(...cartItems.map(item => item.price)).toFixed(2);
       }
     </script>
   </body>
